@@ -10,8 +10,7 @@ import {
   getRect,
   preventDefaultException
 } from '../util/dom'
-
-import { extend } from '../util/lang'
+import { extend, isUndef } from '../util/lang'
 
 const DEFAULT_OPTIONS = {
   startX: 0,
@@ -39,7 +38,7 @@ const DEFAULT_OPTIONS = {
   momentumLimitDistance: 15,
   swipeTime: 2500,
   swipeBounceTime: 500,
-  deceleration: 0.001,
+  deceleration: 0.0015,
   flickLimitTime: 200,
   flickLimitDistance: 100,
   resizePolling: 60,
@@ -118,7 +117,35 @@ const DEFAULT_OPTIONS = {
    * }
    */
   mouseWheel: false,
-  stopPropagation: false
+  stopPropagation: false,
+  /**
+   * for zoom
+   * zoom: {
+   *   start: 1,
+   *   min: 1,
+   *   max: 4
+   * }
+   */
+  zoom: false,
+  /**
+   * for infinity
+   * infinity: {
+   *   render(item, div) {
+   *   },
+   *   createTombstone() {
+   *   },
+   *   fetch(count) {
+   *   }
+   * }
+   */
+  infinity: false,
+  /**
+   * for double click
+   * dblclick: {
+   *   delay: 300
+   * }
+   */
+  dblclick: false
 }
 
 export function initMixin(BScroll) {
@@ -132,6 +159,8 @@ export function initMixin(BScroll) {
     this.y = 0
     this.directionX = 0
     this.directionY = 0
+
+    this.setScale(1)
 
     this._addDOMEvents()
 
@@ -154,6 +183,11 @@ export function initMixin(BScroll) {
     }
 
     this.enable()
+  }
+
+  BScroll.prototype.setScale = function (scale) {
+    this.lastScale = isUndef(this.scale) ? scale : this.scale
+    this.scale = scale
   }
 
   BScroll.prototype._handleOptions = function (options) {
@@ -234,6 +268,12 @@ export function initMixin(BScroll) {
     if (this.options.mouseWheel) {
       this._initMouseWheel()
     }
+    if (this.options.zoom) {
+      this._initZoom()
+    }
+    if (this.options.infinity) {
+      this._initInfinite()
+    }
   }
 
   BScroll.prototype._watchTransition = function () {
@@ -242,7 +282,8 @@ export function initMixin(BScroll) {
     }
     let me = this
     let isInTransition = false
-    Object.defineProperty(this, 'isInTransition', {
+    let key = this.useTransition ? 'isInTransition' : 'isAnimating'
+    Object.defineProperty(this, key, {
       get() {
         return isInTransition
       },
@@ -317,7 +358,7 @@ export function initMixin(BScroll) {
   }
 
   BScroll.prototype._shouldNotRefresh = function () {
-    let outsideBoundaries = this.x > 0 || this.x < this.maxScrollX || this.y > 0 || this.y < this.maxScrollY
+    let outsideBoundaries = this.x > this.minScrollX || this.x < this.maxScrollX || this.y > this.minScrollY || this.y < this.maxScrollY
 
     return this.isInTransition || this.stopFromTransition || outsideBoundaries
   }
@@ -358,16 +399,27 @@ export function initMixin(BScroll) {
       case 'touchstart':
       case 'mousedown':
         this._start(e)
+        if (this.options.zoom && e.touches && e.touches.length > 1) {
+          this._zoomStart(e)
+        }
         break
       case 'touchmove':
       case 'mousemove':
-        this._move(e)
+        if (this.options.zoom && e.touches && e.touches.length > 1) {
+          this._zoom(e)
+        } else {
+          this._move(e)
+        }
         break
       case 'touchend':
       case 'mouseup':
       case 'touchcancel':
       case 'mousecancel':
-        this._end(e)
+        if (this.scaled) {
+          this._zoomEnd(e)
+        } else {
+          this._end(e)
+        }
         break
       case 'orientationchange':
       case 'resize':
@@ -396,13 +448,25 @@ export function initMixin(BScroll) {
   }
 
   BScroll.prototype.refresh = function () {
+    const isWrapperStatic = window.getComputedStyle(this.wrapper, null).position === 'static'
     let wrapperRect = getRect(this.wrapper)
     this.wrapperWidth = wrapperRect.width
     this.wrapperHeight = wrapperRect.height
 
     let scrollerRect = getRect(this.scroller)
-    this.scrollerWidth = scrollerRect.width
-    this.scrollerHeight = scrollerRect.height
+    this.scrollerWidth = Math.round(scrollerRect.width * this.scale)
+    this.scrollerHeight = Math.round(scrollerRect.height * this.scale)
+
+    this.relativeX = scrollerRect.left
+    this.relativeY = scrollerRect.top
+
+    if (isWrapperStatic) {
+      this.relativeX -= wrapperRect.left
+      this.relativeY -= wrapperRect.top
+    }
+
+    this.minScrollX = 0
+    this.minScrollY = 0
 
     const wheel = this.options.wheel
     if (wheel) {
@@ -416,19 +480,35 @@ export function initMixin(BScroll) {
       this.maxScrollY = -this.itemHeight * (this.items.length - 1)
     } else {
       this.maxScrollX = this.wrapperWidth - this.scrollerWidth
-      this.maxScrollY = this.wrapperHeight - this.scrollerHeight
+      if (!this.options.infinity) {
+        this.maxScrollY = this.wrapperHeight - this.scrollerHeight
+      }
+      if (this.maxScrollX < 0) {
+        this.maxScrollX -= this.relativeX
+        this.minScrollX = -this.relativeX
+      } else if (this.scale > 1) {
+        this.maxScrollX = (this.maxScrollX / 2 - this.relativeX)
+        this.minScrollX = this.maxScrollX
+      }
+      if (this.maxScrollY < 0) {
+        this.maxScrollY -= this.relativeY
+        this.minScrollY = -this.relativeY
+      } else if (this.scale > 1) {
+        this.maxScrollY = (this.maxScrollY / 2 - this.relativeY)
+        this.minScrollY = this.maxScrollY
+      }
     }
 
-    this.hasHorizontalScroll = this.options.scrollX && this.maxScrollX < 0
-    this.hasVerticalScroll = this.options.scrollY && this.maxScrollY < 0
+    this.hasHorizontalScroll = this.options.scrollX && this.maxScrollX < this.minScrollX
+    this.hasVerticalScroll = this.options.scrollY && this.maxScrollY < this.minScrollY
 
     if (!this.hasHorizontalScroll) {
-      this.maxScrollX = 0
+      this.maxScrollX = this.minScrollX
       this.scrollerWidth = this.wrapperWidth
     }
 
     if (!this.hasVerticalScroll) {
-      this.maxScrollY = 0
+      this.maxScrollY = this.minScrollY
       this.scrollerHeight = this.wrapperHeight
     }
 
@@ -439,7 +519,7 @@ export function initMixin(BScroll) {
 
     this.trigger('refresh')
 
-    this.resetPosition()
+    !this.scaled && this.resetPosition()
   }
 
   BScroll.prototype.enable = function () {

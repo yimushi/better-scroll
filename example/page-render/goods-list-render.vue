@@ -50,6 +50,7 @@
             fade: false,
             interactive: true
           },
+          dblclick: true,
           probeType: 3
         })
 
@@ -64,14 +65,22 @@
         this.scroll.on('scrollEnd', () => {
           console.log('scrollEnd')
         })
-//        this._appendFood()
+
+        this.scroll.on('dblclick', (e) => {
+          console.log('dblclick:', e)
+        })
+
+        this._appendFood()
       })
+    },
+    destroyed() {
+      this.scroll && this.scroll.destroy()
     },
     methods: {
       _appendFood() {
-        if (this.foods.length < 100) {
+        while (this.foods.length < 100) {
           this.foods = this.foods.concat(_foods)
-          setTimeout(this._appendFood, 5000)
+          this._appendFood()
         }
       }
     },
@@ -98,6 +107,7 @@
       .scroll
         height: 100%
         .foods-wrapper
+          overflow: hidden
           .food-item
             display: flex
             margin: 18px

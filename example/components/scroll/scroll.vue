@@ -79,6 +79,10 @@
         type: Boolean,
         default: false
       },
+      listenScrollEnd: {
+        type: Boolean,
+        default: false
+      },
       direction: {
         type: String,
         default: DIRECTION_V
@@ -113,6 +117,9 @@
       },
       bounce: {
         default: true
+      },
+      zoom: {
+        default: false
       }
     },
     data() {
@@ -128,14 +135,14 @@
     },
     computed: {
       pullUpTxt() {
-        const moreTxt = this.pullUpLoad && this.pullUpLoad.txt && this.pullUpLoad.txt.more || this.$i18n.t('scrollComponent.defaultLoadTxtMore')
+        const moreTxt = (this.pullUpLoad && this.pullUpLoad.txt && this.pullUpLoad.txt.more) || this.$i18n.t('scrollComponent.defaultLoadTxtMore')
 
-        const noMoreTxt = this.pullUpLoad && this.pullUpLoad.txt && this.pullUpLoad.txt.noMore || this.$i18n.t('scrollComponent.defaultLoadTxtNoMore')
+        const noMoreTxt = (this.pullUpLoad && this.pullUpLoad.txt && this.pullUpLoad.txt.noMore) || this.$i18n.t('scrollComponent.defaultLoadTxtNoMore')
 
         return this.pullUpDirty ? moreTxt : noMoreTxt
       },
       refreshTxt() {
-        return this.pullDownRefresh && this.pullDownRefresh.txt || this.$i18n.t('scrollComponent.defaultRefreshTxt')
+        return (this.pullDownRefresh && this.pullDownRefresh.txt) || this.$i18n.t('scrollComponent.defaultRefreshTxt')
       }
     },
     created() {
@@ -145,6 +152,9 @@
       setTimeout(() => {
         this.initScroll()
       }, 20)
+    },
+    destroyed() {
+      this.$refs.scroll && this.$refs.scroll.destroy()
     },
     methods: {
       initScroll() {
@@ -166,7 +176,8 @@
           startY: this.startY,
           freeScroll: this.freeScroll,
           mouseWheel: this.mouseWheel,
-          bounce: this.bounce
+          bounce: this.bounce,
+          zoom: this.zoom
         }
 
         this.scroll = new BScroll(this.$refs.wrapper, options)
@@ -177,9 +188,19 @@
           })
         }
 
+        if (this.listenScrollEnd) {
+          this.scroll.on('scrollEnd', (pos) => {
+            this.$emit('scroll-end', pos)
+          })
+        }
+
         if (this.listenBeforeScroll) {
           this.scroll.on('beforeScrollStart', () => {
             this.$emit('beforeScrollStart')
+          })
+
+          this.scroll.on('scrollStart', () => {
+            this.$emit('scroll-start')
           })
         }
 
@@ -288,7 +309,6 @@
       Bubble
     }
   }
-
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">

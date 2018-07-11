@@ -17,6 +17,7 @@
   - [directionLockThreshold](options.md#directionlockthreshold)
   - [eventPassthrough](options.md#eventpassthrough)
   - [click](options.md#click)
+  - [dblclick](options.md#dblclickv1120)
   - [tap](options.md#tap)
   - [bounce](options.md#bounce)
   - [bounceTime](options.md#bouncetime)
@@ -48,6 +49,8 @@
   - [pullDownRefresh](options-advanced.md#pulldownrefresh)
   - [pullUpLoad](options-advanced.md#pullupload)
   - [mouseWheel](options-advanced.md#mousewheelv180)
+  - [zoom](options-advanced.md#zoomv1110)
+  - [infinity](options-advanced.md#infinityv1120)
 - [Methods / Common](api.md)
   - [refresh](api.md#refresh)
   - [scrollTo](api.md#scrolltox-y-time-easing)
@@ -73,6 +76,7 @@
   - [finishPullUp](api-specific.md#finishpullup)
   - [openPullUp](api-specific.md#openpullupconfig-v190)
   - [closePullUp](api-specific.md#closepullup-v190)
+  - [zoomTo](api-specific.md#zoomtoscale-x-y-v1120)
 - [Events](events.md)
   - [beforeScrollStart](events.md#beforescrollstart)
   - [scrollStart](events.md#scrollstart)
@@ -85,6 +89,8 @@
   - [destroy](events.md#destroy)
   - [pullingDown](events.md#pullingdown)
   - [pullingUp](events.md#pullingup)
+  - [zoomStart](events.md#zoomstart)
+  - [zoomEnd](events.md#zoomend)
 - [Properties](property.md)
   - [x](property.md#x)
   - [y](property.md#y)
@@ -97,8 +103,8 @@
   - [enabled](property.md#enabled)
   - [isInTransition](property.md#isintransition)
   - [isAnimating](property.md#isanimating)
- 
-  
-  
-    
+
+
+
+
 

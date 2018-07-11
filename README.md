@@ -1,6 +1,6 @@
 # better-scroll
 
-[![npm](https://img.shields.io/npm/v/better-scroll.svg?style=flat-square)](https://www.npmjs.com/package/better-scroll) [![Build Status](https://travis-ci.org/ustbhuangyi/better-scroll.svg?branch=master)](https://travis-ci.org/ustbhuangyi/better-scroll)  [![downloads](https://img.shields.io/npm/dm/better-scroll.svg)](https://www.npmjs.com/package/better-scroll)
+[![npm](https://img.shields.io/npm/v/better-scroll.svg?style=flat-square)](https://www.npmjs.com/package/better-scroll) [![Build Status](https://travis-ci.org/ustbhuangyi/better-scroll.svg?branch=master)](https://travis-ci.org/ustbhuangyi/better-scroll)  [![downloads](https://img.shields.io/npm/dm/better-scroll.svg)](https://www.npmjs.com/package/better-scroll) [![Package Quality](http://npm.packagequality.com/shield/better-scroll.svg)](http://packagequality.com/#?package=better-scroll)
 
 [中文文档](https://github.com/ustbhuangyi/better-scroll/blob/master/README_zh-CN.md)
 
@@ -86,7 +86,7 @@ Visit [better-scroll document](https://ustbhuangyi.github.io/better-scroll/doc/)
 
 ## Communication
 
-![QR Code](http://webapp.didistatic.com/static/webapp/shield/better-scroll-qq.jpg)
+<img src="http://static.galileo.xiaojukeji.com/static/tms/shield/better-scroll-qq2.jpeg" width=280 height=384>
 
 ## Demo
 

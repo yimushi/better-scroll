@@ -63,6 +63,15 @@ export function offset(el) {
   }
 }
 
+export function offsetToBody(el) {
+  let rect = el.getBoundingClientRect()
+
+  return {
+    left: -(rect.left + window.pageXOffset),
+    top: -(rect.top + window.pageYOffset)
+  }
+}
+
 let transform = prefixStyle('transform')
 
 export const hasPerspective = inBrowser && prefixStyle('perspective') in elementStyle
@@ -75,7 +84,6 @@ export const style = {
   transform,
   transitionTimingFunction: prefixStyle('transitionTimingFunction'),
   transitionDuration: prefixStyle('transitionDuration'),
-  transitionProperty: prefixStyle('transitionProperty'),
   transitionDelay: prefixStyle('transitionDelay'),
   transformOrigin: prefixStyle('transformOrigin'),
   transitionEnd: prefixStyle('transitionEnd')
@@ -96,7 +104,7 @@ export const eventType = {
 
 export function getRect(el) {
   if (el instanceof window.SVGElement) {
-    var rect = el.getBoundingClientRect()
+    let rect = el.getBoundingClientRect()
     return {
       top: rect.top,
       left: rect.left,
@@ -130,7 +138,7 @@ export function tap(e, eventName) {
   e.target.dispatchEvent(ev)
 }
 
-export function click(e) {
+export function click(e, event = 'click') {
   let eventSource
   if (e.type === 'mouseup' || e.type === 'mousecancel') {
     eventSource = e
@@ -145,7 +153,6 @@ export function click(e) {
     posSrc.clientY = eventSource.clientY || 0
   }
   let ev
-  const event = 'click'
   const bubbles = true
   const cancelable = true
   if (typeof MouseEvent !== 'undefined') {
@@ -171,6 +178,10 @@ export function click(e) {
   ev.forwardedTouchEvent = true
   ev._constructed = true
   e.target.dispatchEvent(ev)
+}
+
+export function dblclick(e) {
+  click(e, 'dblclick')
 }
 
 export function prepend(el, target) {
